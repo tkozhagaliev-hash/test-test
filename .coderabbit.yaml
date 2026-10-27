@@ -37,6 +37,9 @@ reviews:
     enabled: true
     auto_incremental_review: true
     drafts: false
+    # Ревьюить только PR, которые открыл Auto PR от tkozhagaliev-hash (он ставит эту метку)
+    labels:
+      - "auto-pr"
     # Ревьюить PR не только в дефолтную ветку
     base_branches:
       - "dev"

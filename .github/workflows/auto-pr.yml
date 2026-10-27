@@ -39,4 +39,5 @@ jobs:
             --base "$BASE" \
             --head "$BRANCH" \
             --title "$(printf '%s' "$COMMIT_MSG" | head -n1)" \
-            --body "Ветку запушил @$PUSHED_BY"
+            --body "Ветку запушил @$PUSHED_BY" \
+            --label auto-pr

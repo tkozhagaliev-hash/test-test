@@ -1,0 +1,42 @@
+name: Auto PR
+
+on:
+  push:
+    branches-ignore:
+      - main
+
+concurrency:
+  group: auto-pr-${{ github.ref_name }}
+
+permissions:
+  contents: read
+
+jobs:
+  open-pr:
+    if: github.event.deleted == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open PR from the shared account
+        env:
+          GH_TOKEN: ${{ secrets.PR_AUTHOR_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          BASE: ${{ github.event.repository.default_branch }}
+          BRANCH: ${{ github.ref_name }}
+          PUSHED_BY: ${{ github.actor }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          if [ -n "$(gh pr list --head "$BRANCH" --state open --json number --jq '.[].number')" ]; then
+            echo "PR for $BRANCH already exists"
+            exit 0
+          fi
+
+          if [ "$(gh api "repos/$GH_REPO/compare/$BASE...$BRANCH" --jq .ahead_by)" = "0" ]; then
+            echo "$BRANCH has no new commits"
+            exit 0
+          fi
+
+          gh pr create \
+            --base "$BASE" \
+            --head "$BRANCH" \
+            --title "$(printf '%s' "$COMMIT_MSG" | head -n1)" \
+            --body "Ветку запушил @$PUSHED_BY"

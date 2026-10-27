@@ -1,0 +1,22 @@
+name: Enforce PR author
+
+on:
+  pull_request_target:
+    types: [opened, reopened]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  close:
+    if: vars.PR_AUTHOR_LOGIN != '' && github.event.pull_request.user.login != vars.PR_AUTHOR_LOGIN
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close PR opened by someone else
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr close "$PR" --comment "PR здесь открываются автоматически от общего аккаунта. Просто запушь ветку — PR создастся сам."
